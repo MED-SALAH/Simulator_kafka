@@ -9,6 +9,7 @@ import io.gatling.kafka.{KafkaProducerBuilder, KafkaProducerProtocol}
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.producer.ProducerConfig
+import org.apache.kafka.common.serialization.StringSerializer
 
 class SimulationWithAvroSchema extends Simulation {
   val kafkaTopic = "event_ma_banque"
@@ -17,19 +18,11 @@ class SimulationWithAvroSchema extends Simulation {
   val props = new util.HashMap[String, Object]()
   props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBrokers)
   props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[KafkaAvroSerializer])
-  props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, classOf[KafkaAvroSerializer])
+  props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
   props.put("schema.registry.url", "http://35.180.127.210:8081")
 
-//  val user_schema =
-//    s"""
-//       | {
-//       |    "fields": [
-//       |        { "name": "int1", "type": "int" }
-//       |    ],
-//       |    "name": "myrecord",
-//       |    "type": "record"
-//       |}
-//     """.stripMargin
+
+
   val user_schema = """{
   "doc": "fields[1] représente le header de l'evenement, fields[2] représente la partie businessContext",
   "fields": [
@@ -1697,13 +1690,24 @@ class SimulationWithAvroSchema extends Simulation {
 }"""
 
 
+  import io.gatling.core.Predef._
+  import io.gatling.http.Predef._
+
 
   val schema = new Schema.Parser().parse(user_schema)
 
-  val dataGenerator = new RandomDataGenerator[GenericRecord, GenericRecord]()
-  val kafkaProducerProtocol = new KafkaProducerProtocol[GenericRecord, GenericRecord](props, kafkaTopic, dataGenerator)
-  val scn = scenario("Kafka Producer Call").exec(KafkaProducerBuilder[GenericRecord, GenericRecord](Some(schema)))
+  val dataGenerator = new RandomDataGenerator[String, GenericRecord]()
+  val kafkaProducerProtocol = new KafkaProducerProtocol[String, GenericRecord](props, kafkaTopic, dataGenerator)
+  val scn = scenario("Kafka Producer Call").exec(KafkaProducerBuilder[String, GenericRecord](Some(schema)))
 
   // constantUsersPerSec(100000) during (1 minute)
-  setUp(scn.inject(atOnceUsers(1))).protocols(kafkaProducerProtocol)
+  setUp(
+    scn
+      //.inject(rampUsersPerSec((1) ) to(400) during(10))
+     .inject(atOnceUsers(1))
+
+
+  )
+
+    .protocols(kafkaProducerProtocol)
 }

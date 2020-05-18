@@ -4,6 +4,11 @@ import org.apache.avro.Schema
 import org.apache.avro.Schema.Type
 import org.apache.avro.generic.GenericData.Record
 import org.apache.avro.generic.GenericRecord
+import java.util.{List=>JList}
+
+
+import scala.collection.JavaConversions._
+
 
 class RandomDataGenerator[K: Manifest, V: Manifest] {
   private final val ByteManifest = manifest[Byte]
@@ -77,12 +82,48 @@ class RandomDataGenerator[K: Manifest, V: Manifest] {
       fieldType match {
         case Type.BYTES => avroRecord.put(i, 42.toByte)
         case Type.INT => avroRecord.put(i, 42)
-        case Type.LONG => avroRecord.put(i, 42.toLong)
+        case Type.LONG => avroRecord.put(i, "1589563205140".toLong)
         case Type.FLOAT => avroRecord.put(i, 42.11.toFloat)
         case Type.DOUBLE => avroRecord.put(i, 42.11)
-        case Type.STRING => avroRecord.put(i, "Str")
+        case Type.STRING => avroRecord.put(i, "zahir")
         case Type.BOOLEAN => avroRecord.put(i, true)
-        case Type.RECORD => avroRecord.put(i, generateDataForAvroSchema(schema))
+        case Type.RECORD => avroRecord.put(i, generateDataForAvroSchema(Some(field.schema())))
+        case Type.UNION => {
+          import scala.collection.JavaConverters._
+
+
+          val schemas =  field.schema.getTypes().asScala.toList
+
+
+          val hasNull = schemas.filter(s => s.toString == """"null""""  ).length>0
+          if(hasNull){
+
+            schemas.get(0).getType match {
+              case Type.BYTES => avroRecord.put(i, 42.toByte)
+              case Type.INT => avroRecord.put(i, 42)
+              case Type.LONG => avroRecord.put(i, "1589563205140".toLong)
+              case Type.FLOAT => avroRecord.put(i, 42.11.toFloat)
+              case Type.DOUBLE => avroRecord.put(i, 42.11)
+              case Type.STRING => avroRecord.put(i, "zahir")
+              case Type.BOOLEAN => avroRecord.put(i, true)
+            }
+
+          }else{
+
+            // Create a value that is the random package
+            val random = new scala.util.Random
+
+            // Create a start and end value pair
+            val start = - (schemas.size-1)
+            val end = (schemas.size-1)
+
+            val index = start + random.nextInt( (end - start) + 1 )
+
+              avroRecord.put(i, generateDataForAvroSchema(Some(schemas.get(index))))
+          }
+
+
+          }
       }
     }
     avroRecord

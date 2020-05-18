@@ -21,8 +21,11 @@ class KafkaProducerAction[K, V](producerProtocol: KafkaProducerProtocol[K, V],
       statsEngine.logResponse(session, "test",
         ResponseTimings(start, end), OK, Some("Success"), None)
     } catch {
-      case e: Exception => statsEngine.logResponse(session, "test",
-        ResponseTimings(start, start), KO, Some(e.getMessage), None)
+      case e: Exception => {
+        println(s"e ==> ${e.getCause}")
+        statsEngine.logResponse(session, "test",
+          ResponseTimings(start, start), KO, Some(e.getMessage), None)
+      }
     }
     nextAction ! session
   }
