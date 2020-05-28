@@ -4,8 +4,7 @@ import org.apache.avro.Schema
 import org.apache.avro.Schema.Type
 import org.apache.avro.generic.GenericData.Record
 import org.apache.avro.generic.GenericRecord
-import java.util.{List=>JList}
-
+import java.util.{Date, List => JList}
 
 import scala.collection.JavaConversions._
 
@@ -82,7 +81,7 @@ class RandomDataGenerator[K: Manifest, V: Manifest] {
       fieldType match {
         case Type.BYTES => avroRecord.put(i, 42.toByte)
         case Type.INT => avroRecord.put(i, 42)
-        case Type.LONG => avroRecord.put(i, "1589563205140".toLong)
+        case Type.LONG => avroRecord.put(i, (new Date()).getTime())
         case Type.FLOAT => avroRecord.put(i, 42.11.toFloat)
         case Type.DOUBLE => avroRecord.put(i, 42.11)
         case Type.STRING => avroRecord.put(i, "zahir")
@@ -101,7 +100,7 @@ class RandomDataGenerator[K: Manifest, V: Manifest] {
             schemas.get(0).getType match {
               case Type.BYTES => avroRecord.put(i, 42.toByte)
               case Type.INT => avroRecord.put(i, 42)
-              case Type.LONG => avroRecord.put(i, "1589563205140".toLong)
+              case Type.LONG => avroRecord.put(i, (new Date()).getTime)
               case Type.FLOAT => avroRecord.put(i, 42.11.toFloat)
               case Type.DOUBLE => avroRecord.put(i, 42.11)
               case Type.STRING => avroRecord.put(i, "zahir")

@@ -23,7 +23,7 @@ class SimulationWithAvroSchema extends Simulation {
 
 
 
-  val user_schema = """{
+  val events_schema = """{
   "doc": "fields[1] représente le header de l'evenement, fields[2] représente la partie businessContext",
   "fields": [
     {
@@ -1694,7 +1694,7 @@ class SimulationWithAvroSchema extends Simulation {
   import io.gatling.http.Predef._
 
 
-  val schema = new Schema.Parser().parse(user_schema)
+  val schema = new Schema.Parser().parse(events_schema)
 
   val dataGenerator = new RandomDataGenerator[String, GenericRecord]()
   val kafkaProducerProtocol = new KafkaProducerProtocol[String, GenericRecord](props, kafkaTopic, dataGenerator)
@@ -1703,8 +1703,8 @@ class SimulationWithAvroSchema extends Simulation {
   // constantUsersPerSec(100000) during (1 minute)
   setUp(
     scn
-      //.inject(rampUsersPerSec((1) ) to(400) during(10))
-     .inject(atOnceUsers(1))
+     .inject(rampUsersPerSec((1) ) to(400) during(10))
+     //.inject(atOnceUsers(1))
 
 
   )
